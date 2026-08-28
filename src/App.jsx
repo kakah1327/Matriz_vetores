@@ -284,8 +284,24 @@ function evaluateWithSteps(node, matrices, steps) {
   }
   if (node.type === 'power') {
     const child = evaluateWithSteps(node.child, matrices, steps);
-    const result = linalg.power(child, node.n);
-    steps.push({ label: astToString(node), matrix: result });
+    if (child.length !== child[0].length) {
+      throw new Error(`Potência requer matriz quadrada (recebida ${child.length}×${child[0].length})`);
+    }
+    if (node.n === 0) {
+      const result = linalg.identity(child.length);
+      steps.push({ label: astToString(node), matrix: result });
+      return result;
+    }
+    // Registra cada multiplicação da potência como um passo, em vez de só o resultado final
+    const base = astToString(node.child);
+    let result = child;
+    for (let i = 2; i <= node.n; i++) {
+      result = linalg.multiply(result, child);
+      steps.push({ label: `${base}^${i}`, matrix: result });
+    }
+    if (node.n === 1) {
+      steps.push({ label: astToString(node), matrix: result });
+    }
     return result;
   }
   if (node.type === 'mul' || node.type === 'add' || node.type === 'sub') {
