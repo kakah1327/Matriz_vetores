@@ -26,6 +26,18 @@ const CORINTHIANS_BG_SVG = `data:image/svg+xml,${encodeURIComponent(
   </svg>`
 )}`;
 
+// Selo original (não é o escudo oficial — só um círculo com estrela e "SCCP/1910"),
+// pra não usar a marca registrada do clube
+const CORINTHIANS_BADGE_SVG = `data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+    <circle cx="32" cy="32" r="29" fill="black" stroke="white" stroke-width="3"/>
+    <polygon points="32,10 34.4,17.5 42.3,17.5 35.9,22.1 38.4,29.6 32,25 25.6,29.6 28.1,22.1 21.7,17.5 29.6,17.5"
+      fill="white"/>
+    <text x="32" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="11" fill="white">SCCP</text>
+    <text x="32" y="56" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">1910</text>
+  </svg>`
+)}`;
+
 // Tokens de estilo por tema — classes completas (Tailwind precisa do literal inteiro)
 const THEME_STYLES = {
   math: {
@@ -681,8 +693,16 @@ export default function MatrixCalculator() {
           backgroundSize: '46px 46px'
         }}
       />
+      {theme === 'corinthians' && (
+        <>
+          <img src={CORINTHIANS_BADGE_SVG} alt="" className="pointer-events-none fixed z-0 top-2 left-2 w-9 h-9 md:w-10 md:h-10 opacity-70 select-none" />
+          <img src={CORINTHIANS_BADGE_SVG} alt="" className="pointer-events-none fixed z-0 top-2 right-2 w-9 h-9 md:w-10 md:h-10 opacity-70 select-none" />
+          <img src={CORINTHIANS_BADGE_SVG} alt="" className="pointer-events-none fixed z-0 bottom-2 left-2 w-9 h-9 md:w-10 md:h-10 opacity-70 select-none" />
+          <img src={CORINTHIANS_BADGE_SVG} alt="" className="pointer-events-none fixed z-0 bottom-2 right-2 w-9 h-9 md:w-10 md:h-10 opacity-70 select-none" />
+        </>
+      )}
       <div className="relative z-10 max-w-6xl mx-auto">
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div className={`mb-6 flex flex-wrap items-start justify-between gap-3 ${theme === 'corinthians' ? 'px-12' : ''}`}>
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Matrix Calculator</h1>
             <p className={styles.subtitle}>
