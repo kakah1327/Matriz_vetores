@@ -264,6 +264,32 @@ function astToString(node) {
   }
 }
 
+// Monta a conta célula a célula, do jeito que se escreveria resolvendo na mão
+function buildWork(type, left, right) {
+  if (type === 'mul') {
+    return left.map((row) =>
+      right[0].map((_, j) => row.map((v, k) => `${v}×${right[k][j]}`).join(' + '))
+    );
+  }
+  if (type === 'add') {
+    return left.map((row, i) => row.map((v, j) => `${v} + ${right[i][j]}`));
+  }
+  if (type === 'sub') {
+    return left.map((row, i) => row.map((v, j) => `${v} − ${right[i][j]}`));
+  }
+  if (type === 'neg') {
+    return left.map((row) => row.map((v) => `−(${v})`));
+  }
+  return null;
+}
+
+const STEP_HINTS = {
+  mul: 'Cada elemento = soma dos produtos (linha × coluna)',
+  add: 'Soma elemento a elemento',
+  sub: 'Subtração elemento a elemento',
+  neg: 'Troca o sinal de cada elemento'
+};
+
 // Avalia a árvore da expressão e registra cada passo intermediário em `steps`
 function evaluateWithSteps(node, matrices, steps) {
   if (node.type === 'ident') {
@@ -273,7 +299,7 @@ function evaluateWithSteps(node, matrices, steps) {
   if (node.type === 'neg') {
     const child = evaluateWithSteps(node.child, matrices, steps);
     const result = linalg.negate(child);
-    steps.push({ label: astToString(node), matrix: result });
+    steps.push({ label: astToString(node), matrix: result, work: buildWork('neg', child), hint: STEP_HINTS.neg });
     return result;
   }
   if (node.type === 'transpose') {
@@ -296,8 +322,9 @@ function evaluateWithSteps(node, matrices, steps) {
     const base = astToString(node.child);
     let result = child;
     for (let i = 2; i <= node.n; i++) {
-      result = linalg.multiply(result, child);
-      steps.push({ label: `${base}^${i}`, matrix: result });
+      const prev = result;
+      result = linalg.multiply(prev, child);
+      steps.push({ label: `${base}^${i}`, matrix: result, work: buildWork('mul', prev, child), hint: STEP_HINTS.mul });
     }
     if (node.n === 1) {
       steps.push({ label: astToString(node), matrix: result });
@@ -310,7 +337,7 @@ function evaluateWithSteps(node, matrices, steps) {
     const result = node.type === 'mul' ? linalg.multiply(left, right)
       : node.type === 'add' ? linalg.add(left, right)
       : linalg.subtract(left, right);
-    steps.push({ label: astToString(node), matrix: result });
+    steps.push({ label: astToString(node), matrix: result, work: buildWork(node.type, left, right), hint: STEP_HINTS[node.type] });
     return result;
   }
   throw new Error('Nó de expressão desconhecido');
@@ -354,7 +381,7 @@ const MatrixDisplay = ({ title, matrix, precision = 4 }) => {
   };
   return (
     <div className="space-y-2">
-      <h4 className="text-sm font-semibold text-gray-200">{title}</h4>
+      {title && <h4 className="text-sm font-semibold text-gray-200">{title}</h4>}
       <div className="inline-block p-3 bg-slate-700 rounded-lg border border-slate-600 overflow-x-auto">
         {Array.isArray(matrix[0]) ? (
           <table className="font-mono text-sm text-gray-100">
@@ -371,6 +398,29 @@ const MatrixDisplay = ({ title, matrix, precision = 4 }) => {
         ) : (
           <p className="text-xl font-bold text-green-400">{format(matrix[0])}</p>
         )}
+      </div>
+    </div>
+  );
+};
+
+// Mostra a conta célula a célula (ex: "1×5 + 2×7"), como se resolvendo na prova
+const WorkDisplay = ({ work, hint }) => {
+  if (!work) return null;
+  return (
+    <div className="space-y-1">
+      {hint && <p className="text-xs text-gray-400 italic">{hint}</p>}
+      <div className="inline-block p-3 bg-slate-900/60 rounded-lg border border-slate-700 overflow-x-auto">
+        <table className="font-mono text-xs text-blue-200">
+          <tbody>
+            {work.map((row, i) => (
+              <tr key={i}>
+                {row.map((cell, j) => (
+                  <td key={j} className="px-2 py-1 text-right whitespace-nowrap">{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -729,7 +779,11 @@ export default function MatrixCalculator() {
                       <div className="space-y-3 pb-3 border-b border-slate-700">
                         <p className="text-xs font-semibold text-gray-400 uppercase">Passo a passo</p>
                         {exprStepsList.map((step, idx) => (
-                          <MatrixDisplay key={idx} title={`${step.label} =`} matrix={step.matrix} />
+                          <div key={idx} className="space-y-2">
+                            <p className="text-sm font-semibold text-blue-300">{step.label} =</p>
+                            <WorkDisplay work={step.work} hint={step.hint} />
+                            <MatrixDisplay matrix={step.matrix} />
+                          </div>
                         ))}
                       </div>
                     )}
