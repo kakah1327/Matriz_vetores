@@ -1,6 +1,48 @@
 import React, { useState, useRef } from 'react';
 import { AlertCircle, Copy, Plus, Trash2, Camera, Loader2 } from 'lucide-react';
 
+// ============ COMPRESSÃO DE IMAGEM ============
+// Funções serverless da Vercel limitam o corpo da requisição a 4.5MB — uma foto de
+// celular em resolução original facilmente ultrapassa isso já em base64. Reduzimos
+// dimensão/qualidade até caber com folga, tentando níveis cada vez mais agressivos.
+const MAX_UPLOAD_BASE64_LENGTH = 3500000; // ~2.6MB de imagem, com folga sob o limite de 4.5MB
+
+const drawToJpegBase64 = (img, maxDimension, quality) => {
+  let { width, height } = img;
+  if (width > maxDimension || height > maxDimension) {
+    const scale = maxDimension / Math.max(width, height);
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+  return canvas.toDataURL('image/jpeg', quality).split(',')[1];
+};
+
+const compressImageForUpload = (file) => new Promise((resolve, reject) => {
+  const img = new Image();
+  const objectUrl = URL.createObjectURL(file);
+  img.onload = () => {
+    URL.revokeObjectURL(objectUrl);
+    const attempts = [[1600, 0.75], [1200, 0.6], [900, 0.5], [700, 0.4]];
+    for (const [maxDimension, quality] of attempts) {
+      const base64 = drawToJpegBase64(img, maxDimension, quality);
+      if (base64.length <= MAX_UPLOAD_BASE64_LENGTH) {
+        resolve({ base64, mediaType: 'image/jpeg' });
+        return;
+      }
+    }
+    reject(new Error('Não foi possível reduzir a imagem o suficiente — tenta uma foto menor'));
+  };
+  img.onerror = () => {
+    URL.revokeObjectURL(objectUrl);
+    reject(new Error('Falha ao carregar a imagem'));
+  };
+  img.src = objectUrl;
+});
+
 // ============ ÁLGEBRA LINEAR ============
 const linalg = {
   add: (a, b) => {
@@ -383,13 +425,7 @@ export default function MatrixCalculator() {
     setImageError('');
     setLastImportSummary('');
     try {
-      const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = () => reject(new Error('Falha ao ler o arquivo de imagem'));
-        reader.readAsDataURL(file);
-      });
-      const mediaType = file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg';
+      const { base64, mediaType } = await compressImageForUpload(file);
 
       const prompt = 'Esta imagem mostra uma ou mais matrizes (de um exercício de álgebra linear, podem estar escritas à mão ou impressas). Extraia cada matriz. Responda APENAS com um objeto JSON válido, sem markdown, sem texto explicativo, exatamente neste formato: {"matrizes": {"NOME": [[1,2],[3,4]]}}. Use como nome a letra/rótulo da matriz como aparece na imagem (ex: "A", "B"); se não houver nome visível, use "M1", "M2" etc, na ordem em que aparecem. Todos os valores devem ser números (não strings). Se conseguir identificar uma expressão a ser calculada (ex: "A*B - B*A"), inclua também a chave "expressao" com essa string usando a sintaxe: * para multiplicação, + e - para soma/subtração, \' para transposta, ^n para potência. Se não houver expressão clara, omita essa chave.';
 
