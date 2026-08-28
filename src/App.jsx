@@ -383,11 +383,6 @@ export default function MatrixCalculator() {
     setImageError('');
     setLastImportSummary('');
     try {
-      const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
-      if (!apiKey) {
-        throw new Error('Chave da API do Gemini não configurada. Adiciona REACT_APP_GEMINI_API_KEY nas variáveis de ambiente do projeto.');
-      }
-
       const base64 = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result.split(',')[1]);
@@ -398,22 +393,11 @@ export default function MatrixCalculator() {
 
       const prompt = 'Esta imagem mostra uma ou mais matrizes (de um exercício de álgebra linear, podem estar escritas à mão ou impressas). Extraia cada matriz. Responda APENAS com um objeto JSON válido, sem markdown, sem texto explicativo, exatamente neste formato: {"matrizes": {"NOME": [[1,2],[3,4]]}}. Use como nome a letra/rótulo da matriz como aparece na imagem (ex: "A", "B"); se não houver nome visível, use "M1", "M2" etc, na ordem em que aparecem. Todos os valores devem ser números (não strings). Se conseguir identificar uma expressão a ser calculada (ex: "A*B - B*A"), inclua também a chave "expressao" com essa string usando a sintaxe: * para multiplicação, + e - para soma/subtração, \' para transposta, ^n para potência. Se não houver expressão clara, omita essa chave.';
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: prompt },
-                { inline_data: { mime_type: mediaType, data: base64 } }
-              ]
-            }],
-            generationConfig: { temperature: 0, maxOutputTokens: 1000 }
-          })
-        }
-      );
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, mediaType, base64 })
+      });
 
       if (!response.ok) {
         const errBody = await response.text().catch(() => '');

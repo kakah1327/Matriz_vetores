@@ -23,8 +23,9 @@ Este é um projeto React já pronto (Matrix Calculator). Preciso que você:
 2. Inicialize um repositório git, faça o commit inicial
 3. Crie um repositório novo no GitHub (posso autenticar via gh CLI) e suba o código
 4. Configure o deploy no Vercel conectado a esse repositório do GitHub
-5. Não suba a chave da API — ela vai como variável de ambiente REACT_APP_GEMINI_API_KEY, 
-   configurada direto no painel do Vercel, não no código
+5. Não suba a chave da API — ela vai como variável de ambiente GEMINI_API_KEY (sem prefixo
+   REACT_APP_, usada só pela serverless function em api/gemini.js), configurada direto no
+   painel do Vercel, não no código
 ```
 
 **4. Se o Claude Code perguntar sobre a chave do Gemini**, você mesmo cola ela quando ele pedir pra configurar a variável de ambiente — nunca peça pra ele "adivinhar" ou usar uma chave de exemplo.
