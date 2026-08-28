@@ -14,6 +14,48 @@ const MATH_BG_SVG = `data:image/svg+xml,${encodeURIComponent(
   </svg>`
 )}`;
 
+// Fundo decorativo: modo Corinthians, só de brincadeira — iniciais, ano de fundação e estrelas
+const CORINTHIANS_BG_SVG = `data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260">
+    <text x="14" y="50" font-family="Arial, sans-serif" font-weight="bold" font-size="34" fill="rgba(255,255,255,0.07)">SCCP</text>
+    <text x="165" y="34" font-family="Georgia, serif" font-size="30" fill="rgba(255,255,255,0.06)">&#9733;</text>
+    <text x="34" y="150" font-family="Arial, sans-serif" font-size="28" fill="rgba(255,255,255,0.055)">1910</text>
+    <text x="180" y="130" font-family="Georgia, serif" font-size="34" fill="rgba(255,255,255,0.06)">&#9733;</text>
+    <text x="70" y="225" font-family="Arial, sans-serif" font-weight="bold" font-size="28" fill="rgba(255,255,255,0.06)">FIEL</text>
+    <text x="210" y="235" font-family="Georgia, serif" font-size="24" fill="rgba(255,255,255,0.05)">&#9733;</text>
+  </svg>`
+)}`;
+
+// Tokens de estilo por tema — classes completas (Tailwind precisa do literal inteiro)
+const THEME_STYLES = {
+  math: {
+    bg: 'bg-gradient-to-br from-zinc-950 via-zinc-900 to-black',
+    pattern: MATH_BG_SVG,
+    subtitle: 'text-emerald-300',
+    tabActive: 'bg-emerald-600 text-white',
+    tabInactive: 'bg-slate-800 text-gray-400 hover:bg-slate-700',
+    hoverBorder: 'hover:border-emerald-500',
+    hint: 'text-emerald-400',
+    label: 'text-emerald-300',
+    focusRing: 'focus:ring-emerald-500',
+    button: 'bg-emerald-600 hover:bg-emerald-500 text-white',
+    buttonGradient: 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white'
+  },
+  corinthians: {
+    bg: 'bg-gradient-to-br from-black via-neutral-950 to-black',
+    pattern: CORINTHIANS_BG_SVG,
+    subtitle: 'text-neutral-300',
+    tabActive: 'bg-white text-black',
+    tabInactive: 'bg-neutral-900 text-neutral-400 hover:bg-neutral-800 border border-neutral-700',
+    hoverBorder: 'hover:border-white',
+    hint: 'text-neutral-300',
+    label: 'text-white',
+    focusRing: 'focus:ring-white',
+    button: 'bg-white hover:bg-neutral-200 text-black',
+    buttonGradient: 'bg-gradient-to-r from-white to-neutral-200 hover:from-neutral-100 hover:to-white text-black'
+  }
+};
+
 // ============ COMPRESSÃO DE IMAGEM ============
 // Funções serverless da Vercel limitam o corpo da requisição a 4.5MB — uma foto de
 // celular em resolução original facilmente ultrapassa isso já em base64. Reduzimos
@@ -441,6 +483,8 @@ const WorkDisplay = ({ work, hint }) => {
 
 export default function MatrixCalculator() {
   const [mode, setMode] = useState('expression'); // 'simple' | 'expression'
+  const [theme, setTheme] = useState('math'); // 'math' | 'corinthians'
+  const styles = THEME_STYLES[theme];
 
   // ---- Modo Simples ----
   const [matrixA, setMatrixA] = useState('1,2,3\n4,5,6\n7,8,9');
@@ -625,10 +669,10 @@ export default function MatrixCalculator() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-zinc-950 via-zinc-900 to-black p-4 md:p-8">
+    <div className={`min-h-screen relative overflow-hidden ${styles.bg} p-4 md:p-8`}>
       <div
         className="pointer-events-none fixed inset-0"
-        style={{ backgroundImage: `url("${MATH_BG_SVG}")`, backgroundRepeat: 'repeat', backgroundSize: '260px 260px' }}
+        style={{ backgroundImage: `url("${styles.pattern}")`, backgroundRepeat: 'repeat', backgroundSize: '260px 260px' }}
       />
       <div
         className="pointer-events-none fixed inset-0"
@@ -638,9 +682,19 @@ export default function MatrixCalculator() {
         }}
       />
       <div className="relative z-10 max-w-6xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Matrix Calculator</h1>
-          <p className="text-emerald-300">Álgebra linear para Ciência de Dados</p>
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Matrix Calculator</h1>
+            <p className={styles.subtitle}>
+              {theme === 'corinthians' ? 'Álgebra linear com a força da Fiel 🖤🤍' : 'Álgebra linear para Ciência de Dados'}
+            </p>
+          </div>
+          <button
+            onClick={() => setTheme(theme === 'math' ? 'corinthians' : 'math')}
+            className="px-3 py-2 rounded-lg text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-gray-200 border border-slate-700 transition"
+          >
+            {theme === 'math' ? '🖤🤍 Modo Corinthians' : '🔢 Modo Matemática'}
+          </button>
         </div>
 
         {/* Mode Switch */}
@@ -648,7 +702,7 @@ export default function MatrixCalculator() {
           <button
             onClick={() => setMode('exercises')}
             className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
-              mode === 'exercises' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
+              mode === 'exercises' ? styles.tabActive : styles.tabInactive
             }`}
           >
             Lista de Exercícios
@@ -656,7 +710,7 @@ export default function MatrixCalculator() {
           <button
             onClick={() => setMode('expression')}
             className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
-              mode === 'expression' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
+              mode === 'expression' ? styles.tabActive : styles.tabInactive
             }`}
           >
             Modo Expressão
@@ -664,7 +718,7 @@ export default function MatrixCalculator() {
           <button
             onClick={() => setMode('simple')}
             className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
-              mode === 'simple' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
+              mode === 'simple' ? styles.tabActive : styles.tabInactive
             }`}
           >
             Modo Simples
@@ -677,11 +731,11 @@ export default function MatrixCalculator() {
               <button
                 key={ex.id}
                 onClick={() => loadExercise(ex)}
-                className="text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-emerald-500 rounded-xl p-4 transition group"
+                className={`text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 ${styles.hoverBorder} rounded-xl p-4 transition group`}
               >
                 <p className="text-white font-semibold mb-1">{ex.title}</p>
                 <p className="text-xs text-gray-400 font-mono">{ex.expression}</p>
-                <p className="text-xs text-emerald-400 mt-2 opacity-0 group-hover:opacity-100 transition">Clique para resolver →</p>
+                <p className={`text-xs ${styles.hint} mt-2 opacity-0 group-hover:opacity-100 transition`}>Clique para resolver →</p>
               </button>
             ))}
           </div>
@@ -736,12 +790,12 @@ export default function MatrixCalculator() {
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
                       placeholder="Nome (ex: C)"
-                      className="w-24 px-2 py-1 text-sm bg-slate-700 text-white border border-slate-600 rounded focus:ring-2 focus:ring-emerald-500"
+                      className={`w-24 px-2 py-1 text-sm bg-slate-700 text-white border border-slate-600 rounded focus:ring-2 ${styles.focusRing}`}
                       onKeyDown={(e) => e.key === 'Enter' && addMatrix()}
                     />
                     <button
                       onClick={addMatrix}
-                      className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-sm font-medium"
+                      className={`flex items-center gap-1 px-3 py-1 ${styles.button} rounded text-sm font-medium`}
                     >
                       <Plus className="w-4 h-4" /> Adicionar
                     </button>
@@ -764,7 +818,7 @@ export default function MatrixCalculator() {
                   {Object.entries(namedMatrices).map(([name, text]) => (
                     <div key={name} className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <label className="text-sm font-semibold text-emerald-300">Matriz {name}</label>
+                        <label className={`text-sm font-semibold ${styles.label}`}>Matriz {name}</label>
                         <button onClick={() => removeMatrix(name)} className="text-gray-500 hover:text-red-400">
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -772,7 +826,7 @@ export default function MatrixCalculator() {
                       <textarea
                         value={text}
                         onChange={(e) => updateMatrixText(name, e.target.value)}
-                        className="w-full p-2 font-mono text-sm bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 resize-none h-20"
+                        className={`w-full p-2 font-mono text-sm bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 ${styles.focusRing} resize-none h-20`}
                       />
                     </div>
                   ))}
@@ -786,7 +840,7 @@ export default function MatrixCalculator() {
                   value={expression}
                   onChange={(e) => setExpression(e.target.value)}
                   placeholder="Ex: A*B - B*A"
-                  className="w-full p-3 font-mono text-base bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                  className={`w-full p-3 font-mono text-base bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 ${styles.focusRing}`}
                   onKeyDown={(e) => e.key === 'Enter' && computeExpression()}
                 />
                 <div className="text-xs text-gray-400 space-y-1">
@@ -795,7 +849,7 @@ export default function MatrixCalculator() {
                 </div>
                 <button
                   onClick={() => computeExpression()}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold py-3 rounded-lg transition shadow-lg"
+                  className={`w-full ${styles.buttonGradient} font-bold py-3 rounded-lg transition shadow-lg`}
                 >
                   Calcular Expressão
                 </button>
@@ -819,7 +873,7 @@ export default function MatrixCalculator() {
                         <p className="text-xs font-semibold text-gray-400 uppercase">Passo a passo</p>
                         {exprStepsList.map((step, idx) => (
                           <div key={idx} className="space-y-2">
-                            <p className="text-sm font-semibold text-emerald-300">{step.label} =</p>
+                            <p className={`text-sm font-semibold ${styles.label}`}>{step.label} =</p>
                             <WorkDisplay work={step.work} hint={step.hint} />
                             <MatrixDisplay matrix={step.matrix} />
                           </div>
@@ -829,7 +883,7 @@ export default function MatrixCalculator() {
                     <MatrixDisplay title={`Resultado final: ${expression}`} matrix={exprResult} />
                     <button
                       onClick={() => copyResult(exprResult)}
-                      className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition"
+                      className={`w-full flex items-center justify-center gap-2 py-2 px-4 ${styles.button} rounded-lg font-medium transition`}
                     >
                       <Copy className="w-4 h-4" /> Copiar
                     </button>
@@ -853,7 +907,7 @@ export default function MatrixCalculator() {
                   <textarea
                     value={matrixA}
                     onChange={(e) => setMatrixA(e.target.value)}
-                    className="w-full p-3 font-mono text-sm bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 resize-none h-28"
+                    className={`w-full p-3 font-mono text-sm bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 ${styles.focusRing} resize-none h-28`}
                   />
                 </div>
 
@@ -865,7 +919,7 @@ export default function MatrixCalculator() {
                         key={op.id}
                         onClick={() => setOperation(op.id)}
                         className={`py-2 px-3 rounded-lg font-medium text-sm transition ${
-                          operation === op.id ? 'bg-emerald-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                          operation === op.id ? `${styles.tabActive} shadow-lg` : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
                         }`}
                       >
                         {op.label}
@@ -880,14 +934,14 @@ export default function MatrixCalculator() {
                     <textarea
                       value={matrixB}
                       onChange={(e) => setMatrixB(e.target.value)}
-                      className="w-full p-3 font-mono text-sm bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 resize-none h-28"
+                      className={`w-full p-3 font-mono text-sm bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 ${styles.focusRing} resize-none h-28`}
                     />
                   </div>
                 )}
 
                 <button
                   onClick={computeSimple}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold py-3 rounded-lg transition shadow-lg"
+                  className={`w-full ${styles.buttonGradient} font-bold py-3 rounded-lg transition shadow-lg`}
                 >
                   Calcular
                 </button>
@@ -909,7 +963,7 @@ export default function MatrixCalculator() {
                     <MatrixDisplay title="Resultado" matrix={simpleResult} />
                     <button
                       onClick={() => copyResult(simpleResult)}
-                      className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition"
+                      className={`w-full flex items-center justify-center gap-2 py-2 px-4 ${styles.button} rounded-lg font-medium transition`}
                     >
                       <Copy className="w-4 h-4" /> Copiar
                     </button>
