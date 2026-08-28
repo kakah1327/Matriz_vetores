@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { AlertCircle, Copy, Plus, Trash2, Camera, Loader2 } from 'lucide-react';
+import { AlertCircle, Copy, Plus, Trash2, Camera, Upload, Loader2 } from 'lucide-react';
 
 // ============ COMPRESSÃO DE IMAGEM ============
 // Funções serverless da Vercel limitam o corpo da requisição a 4.5MB — uma foto de
@@ -482,6 +482,7 @@ export default function MatrixCalculator() {
 
   // ---- Captura por foto (visão) ----
   const fileInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [imageError, setImageError] = useState('');
   const [lastImportSummary, setLastImportSummary] = useState('');
@@ -692,6 +693,20 @@ export default function MatrixCalculator() {
                           <Camera className="w-4 h-4" /> Tirar foto
                         </>
                       )}
+                    </button>
+                    <input
+                      ref={galleryInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => e.target.files[0] && processImage(e.target.files[0])}
+                      className="hidden"
+                    />
+                    <button
+                      onClick={() => galleryInputRef.current && galleryInputRef.current.click()}
+                      disabled={isProcessingImage}
+                      className="flex items-center gap-1 px-3 py-1 bg-slate-600 hover:bg-slate-500 disabled:bg-slate-800 disabled:cursor-wait text-white rounded text-sm font-medium"
+                    >
+                      <Upload className="w-4 h-4" /> Enviar foto
                     </button>
                     <input
                       value={newName}
