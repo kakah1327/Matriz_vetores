@@ -1,6 +1,19 @@
 import React, { useState, useRef } from 'react';
 import { AlertCircle, Copy, Plus, Trash2, Camera, Upload, Loader2 } from 'lucide-react';
 
+// Fundo decorativo: símbolos matemáticos espalhados bem sutis, sem tom azulado
+const MATH_BG_SVG = `data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260">
+    <text x="14" y="46" font-family="Georgia, serif" font-size="36" fill="rgba(255,255,255,0.055)">&#931;</text>
+    <text x="150" y="34" font-family="Georgia, serif" font-size="28" fill="rgba(255,255,255,0.05)">&#960;</text>
+    <text x="195" y="115" font-family="Georgia, serif" font-size="42" fill="rgba(255,255,255,0.05)">&#8747;</text>
+    <text x="26" y="150" font-family="Georgia, serif" font-size="34" fill="rgba(255,255,255,0.045)">&#8730;</text>
+    <text x="150" y="195" font-family="Georgia, serif" font-size="26" fill="rgba(255,255,255,0.045)">&#8734;</text>
+    <text x="55" y="235" font-family="Menlo, monospace" font-size="30" fill="rgba(255,255,255,0.05)">[ ]</text>
+    <text x="205" y="245" font-family="Georgia, serif" font-size="24" fill="rgba(255,255,255,0.04)">&#215;</text>
+  </svg>`
+)}`;
+
 // ============ COMPRESSÃO DE IMAGEM ============
 // Funções serverless da Vercel limitam o corpo da requisição a 4.5MB — uma foto de
 // celular em resolução original facilmente ultrapassa isso já em base64. Reduzimos
@@ -612,8 +625,19 @@ export default function MatrixCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-zinc-950 via-zinc-900 to-black p-4 md:p-8">
+      <div
+        className="pointer-events-none fixed inset-0"
+        style={{ backgroundImage: `url("${MATH_BG_SVG}")`, backgroundRepeat: 'repeat', backgroundSize: '260px 260px' }}
+      />
+      <div
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)',
+          backgroundSize: '46px 46px'
+        }}
+      />
+      <div className="relative z-10 max-w-6xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Matrix Calculator</h1>
           <p className="text-blue-300">Álgebra linear para Ciência de Dados</p>
