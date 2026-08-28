@@ -110,6 +110,34 @@ const compressImageForUpload = (file) => new Promise((resolve, reject) => {
   img.src = objectUrl;
 });
 
+// Uma chamada ao proxy do Gemini; erro de rede ou 5xx marca a falha como transitória
+const callGeminiOnce = async (payload) => {
+  const response = await fetch('/api/gemini', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) {
+    const errBody = await response.text().catch(() => '');
+    const err = new Error(`Erro na API do Gemini (${response.status}) — tenta de novo ou digita manualmente. ${errBody.slice(0, 150)}`);
+    err.transient = response.status >= 500;
+    throw err;
+  }
+  return response.json();
+};
+
+// Tenta de novo uma vez (rede da prova pode falhar) antes de desistir —
+// erro de conexão (fetch rejeitou) ou 5xx contam como transitórios, 4xx não
+const callGeminiWithRetry = async (payload) => {
+  try {
+    return await callGeminiOnce(payload);
+  } catch (e) {
+    if (e.transient === false) throw e;
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    return callGeminiOnce(payload);
+  }
+};
+
 // ============ ÁLGEBRA LINEAR ============
 const linalg = {
   add: (a, b) => {
@@ -552,11 +580,13 @@ export default function MatrixCalculator() {
   // ---- Captura por foto (visão) ----
   const fileInputRef = useRef(null);
   const galleryInputRef = useRef(null);
+  const lastImageFileRef = useRef(null);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [imageError, setImageError] = useState('');
   const [lastImportSummary, setLastImportSummary] = useState('');
 
   const processImage = async (file) => {
+    lastImageFileRef.current = file;
     setIsProcessingImage(true);
     setImageError('');
     setLastImportSummary('');
@@ -565,18 +595,7 @@ export default function MatrixCalculator() {
 
       const prompt = 'Esta imagem mostra uma ou mais matrizes (de um exercício de álgebra linear, podem estar escritas à mão ou impressas). Extraia cada matriz. Responda APENAS com um objeto JSON válido, sem markdown, sem texto explicativo, exatamente neste formato: {"matrizes": {"NOME": [[1,2],[3,4]]}}. Use como nome a letra/rótulo da matriz como aparece na imagem (ex: "A", "B"); se não houver nome visível, use "M1", "M2" etc, na ordem em que aparecem. Todos os valores devem ser números (não strings). Se conseguir identificar uma expressão a ser calculada (ex: "A*B - B*A"), inclua também a chave "expressao" com essa string usando a sintaxe: * para multiplicação, + e - para soma/subtração, \' para transposta, ^n para potência. Se não houver expressão clara, omita essa chave.';
 
-      const response = await fetch('/api/gemini', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, mediaType, base64 })
-      });
-
-      if (!response.ok) {
-        const errBody = await response.text().catch(() => '');
-        throw new Error(`Erro na API do Gemini (${response.status}) — tenta de novo ou digita manualmente. ${errBody.slice(0, 150)}`);
-      }
-
-      const data = await response.json();
+      const data = await callGeminiWithRetry({ prompt, mediaType, base64 });
       const textBlock = data?.candidates?.[0]?.content?.parts?.find(p => p.text)?.text;
       if (!textBlock) throw new Error('Não recebi resposta em texto da API');
 
@@ -613,7 +632,25 @@ export default function MatrixCalculator() {
     } finally {
       setIsProcessingImage(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+      if (galleryInputRef.current) galleryInputRef.current.value = '';
     }
+  };
+
+  const resetAll = () => {
+    if (!window.confirm('Limpar tudo? Isso apaga todas as matrizes, expressões e resultados.')) return;
+    setMatrixA('');
+    setMatrixB('');
+    setSimpleResult(null);
+    setSimpleError('');
+    setNamedMatrices({});
+    setNewName('');
+    setExpression('');
+    setExprResult(null);
+    setExprError('');
+    setExprStepsList([]);
+    setImageError('');
+    setLastImportSummary('');
+    lastImageFileRef.current = null;
   };
 
   const addMatrix = () => {
@@ -709,12 +746,20 @@ export default function MatrixCalculator() {
               {theme === 'corinthians' ? 'Álgebra linear com a força da Fiel 🖤🤍' : 'Álgebra linear para Ciência de Dados'}
             </p>
           </div>
-          <button
-            onClick={() => setTheme(theme === 'math' ? 'corinthians' : 'math')}
-            className="px-3 py-2 rounded-lg text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-gray-200 border border-slate-700 transition"
-          >
-            {theme === 'math' ? '🖤🤍 Modo Corinthians' : '🔢 Modo Matemática'}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={resetAll}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-gray-200 border border-slate-700 transition"
+            >
+              <Trash2 className="w-4 h-4" /> Limpar tudo
+            </button>
+            <button
+              onClick={() => setTheme(theme === 'math' ? 'corinthians' : 'math')}
+              className="px-3 py-2 rounded-lg text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-gray-200 border border-slate-700 transition"
+            >
+              {theme === 'math' ? '🖤🤍 Modo Corinthians' : '🔢 Modo Matemática'}
+            </button>
+          </div>
         </div>
 
         {/* Mode Switch */}
@@ -825,7 +870,18 @@ export default function MatrixCalculator() {
                 {imageError && (
                   <div className="flex gap-3 p-3 bg-red-900/40 border border-red-600 rounded-lg">
                     <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-200">{imageError}</p>
+                    <div className="flex-1 space-y-2">
+                      <p className="text-sm text-red-200">{imageError}</p>
+                      {lastImageFileRef.current && (
+                        <button
+                          onClick={() => processImage(lastImageFileRef.current)}
+                          disabled={isProcessingImage}
+                          className="px-3 py-1 bg-red-800 hover:bg-red-700 disabled:cursor-wait text-white rounded text-xs font-medium"
+                        >
+                          Tentar novamente
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
                 {lastImportSummary && !imageError && (
