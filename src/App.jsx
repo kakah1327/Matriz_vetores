@@ -423,7 +423,7 @@ const WorkDisplay = ({ work, hint }) => {
     <div className="space-y-1">
       {hint && <p className="text-xs text-gray-400 italic">{hint}</p>}
       <div className="inline-block p-3 bg-slate-900/60 rounded-lg border border-slate-700 overflow-x-auto">
-        <table className="font-mono text-xs text-blue-200">
+        <table className="font-mono text-xs text-emerald-200">
           <tbody>
             {work.map((row, i) => (
               <tr key={i}>
@@ -640,7 +640,7 @@ export default function MatrixCalculator() {
       <div className="relative z-10 max-w-6xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Matrix Calculator</h1>
-          <p className="text-blue-300">Álgebra linear para Ciência de Dados</p>
+          <p className="text-emerald-300">Álgebra linear para Ciência de Dados</p>
         </div>
 
         {/* Mode Switch */}
@@ -648,7 +648,7 @@ export default function MatrixCalculator() {
           <button
             onClick={() => setMode('exercises')}
             className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
-              mode === 'exercises' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
+              mode === 'exercises' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
             }`}
           >
             Lista de Exercícios
@@ -656,7 +656,7 @@ export default function MatrixCalculator() {
           <button
             onClick={() => setMode('expression')}
             className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
-              mode === 'expression' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
+              mode === 'expression' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
             }`}
           >
             Modo Expressão
@@ -664,7 +664,7 @@ export default function MatrixCalculator() {
           <button
             onClick={() => setMode('simple')}
             className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
-              mode === 'simple' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
+              mode === 'simple' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-gray-400 hover:bg-slate-700'
             }`}
           >
             Modo Simples
@@ -677,11 +677,11 @@ export default function MatrixCalculator() {
               <button
                 key={ex.id}
                 onClick={() => loadExercise(ex)}
-                className="text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-blue-500 rounded-xl p-4 transition group"
+                className="text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-emerald-500 rounded-xl p-4 transition group"
               >
                 <p className="text-white font-semibold mb-1">{ex.title}</p>
                 <p className="text-xs text-gray-400 font-mono">{ex.expression}</p>
-                <p className="text-xs text-blue-400 mt-2 opacity-0 group-hover:opacity-100 transition">Clique para resolver →</p>
+                <p className="text-xs text-emerald-400 mt-2 opacity-0 group-hover:opacity-100 transition">Clique para resolver →</p>
               </button>
             ))}
           </div>
@@ -736,12 +736,12 @@ export default function MatrixCalculator() {
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
                       placeholder="Nome (ex: C)"
-                      className="w-24 px-2 py-1 text-sm bg-slate-700 text-white border border-slate-600 rounded focus:ring-2 focus:ring-blue-500"
+                      className="w-24 px-2 py-1 text-sm bg-slate-700 text-white border border-slate-600 rounded focus:ring-2 focus:ring-emerald-500"
                       onKeyDown={(e) => e.key === 'Enter' && addMatrix()}
                     />
                     <button
                       onClick={addMatrix}
-                      className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium"
+                      className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-sm font-medium"
                     >
                       <Plus className="w-4 h-4" /> Adicionar
                     </button>
@@ -764,7 +764,7 @@ export default function MatrixCalculator() {
                   {Object.entries(namedMatrices).map(([name, text]) => (
                     <div key={name} className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <label className="text-sm font-semibold text-blue-300">Matriz {name}</label>
+                        <label className="text-sm font-semibold text-emerald-300">Matriz {name}</label>
                         <button onClick={() => removeMatrix(name)} className="text-gray-500 hover:text-red-400">
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -772,7 +772,7 @@ export default function MatrixCalculator() {
                       <textarea
                         value={text}
                         onChange={(e) => updateMatrixText(name, e.target.value)}
-                        className="w-full p-2 font-mono text-sm bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none h-20"
+                        className="w-full p-2 font-mono text-sm bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 resize-none h-20"
                       />
                     </div>
                   ))}
@@ -786,7 +786,7 @@ export default function MatrixCalculator() {
                   value={expression}
                   onChange={(e) => setExpression(e.target.value)}
                   placeholder="Ex: A*B - B*A"
-                  className="w-full p-3 font-mono text-base bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 font-mono text-base bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500"
                   onKeyDown={(e) => e.key === 'Enter' && computeExpression()}
                 />
                 <div className="text-xs text-gray-400 space-y-1">
@@ -795,7 +795,7 @@ export default function MatrixCalculator() {
                 </div>
                 <button
                   onClick={() => computeExpression()}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-3 rounded-lg transition shadow-lg"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold py-3 rounded-lg transition shadow-lg"
                 >
                   Calcular Expressão
                 </button>
@@ -819,7 +819,7 @@ export default function MatrixCalculator() {
                         <p className="text-xs font-semibold text-gray-400 uppercase">Passo a passo</p>
                         {exprStepsList.map((step, idx) => (
                           <div key={idx} className="space-y-2">
-                            <p className="text-sm font-semibold text-blue-300">{step.label} =</p>
+                            <p className="text-sm font-semibold text-emerald-300">{step.label} =</p>
                             <WorkDisplay work={step.work} hint={step.hint} />
                             <MatrixDisplay matrix={step.matrix} />
                           </div>
@@ -829,7 +829,7 @@ export default function MatrixCalculator() {
                     <MatrixDisplay title={`Resultado final: ${expression}`} matrix={exprResult} />
                     <button
                       onClick={() => copyResult(exprResult)}
-                      className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition"
+                      className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition"
                     >
                       <Copy className="w-4 h-4" /> Copiar
                     </button>
@@ -853,7 +853,7 @@ export default function MatrixCalculator() {
                   <textarea
                     value={matrixA}
                     onChange={(e) => setMatrixA(e.target.value)}
-                    className="w-full p-3 font-mono text-sm bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none h-28"
+                    className="w-full p-3 font-mono text-sm bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 resize-none h-28"
                   />
                 </div>
 
@@ -865,7 +865,7 @@ export default function MatrixCalculator() {
                         key={op.id}
                         onClick={() => setOperation(op.id)}
                         className={`py-2 px-3 rounded-lg font-medium text-sm transition ${
-                          operation === op.id ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                          operation === op.id ? 'bg-emerald-600 text-white shadow-lg' : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
                         }`}
                       >
                         {op.label}
@@ -880,14 +880,14 @@ export default function MatrixCalculator() {
                     <textarea
                       value={matrixB}
                       onChange={(e) => setMatrixB(e.target.value)}
-                      className="w-full p-3 font-mono text-sm bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none h-28"
+                      className="w-full p-3 font-mono text-sm bg-slate-700 text-white border border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 resize-none h-28"
                     />
                   </div>
                 )}
 
                 <button
                   onClick={computeSimple}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-3 rounded-lg transition shadow-lg"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold py-3 rounded-lg transition shadow-lg"
                 >
                   Calcular
                 </button>
@@ -909,7 +909,7 @@ export default function MatrixCalculator() {
                     <MatrixDisplay title="Resultado" matrix={simpleResult} />
                     <button
                       onClick={() => copyResult(simpleResult)}
-                      className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition"
+                      className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition"
                     >
                       <Copy className="w-4 h-4" /> Copiar
                     </button>
